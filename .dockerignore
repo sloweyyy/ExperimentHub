@@ -1,0 +1,31 @@
+# Node.js/Next.js
+experimenthub/node_modules
+experimenthub/.next
+experimenthub/out
+experimenthub/npm-debug.log*
+experimenthub/yarn-debug.log*
+experimenthub/yarn-error.log*
+
+# Python
+backend/__pycache__/
+backend/*.py[cod]
+backend/*$py.class
+backend/venv
+backend/.env
+backend/env
+backend/.venv
+backend/ENV
+
+# General
+.git
+.github
+.gitignore
+.dockerignore
+.DS_Store
+**/.DS_Store
+README.md
+LICENSE
+
+# Docker files
+Dockerfile*
+docker-compose* 
