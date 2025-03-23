@@ -2,6 +2,8 @@
 
 ExperimentHub is a web application for managing machine learning experiments and jobs.
 
+![image](https://github.com/user-attachments/assets/33fd7047-f373-4055-8c4e-711e6301cb7d)
+
 ## Running with Docker
 
 ### Prerequisites
