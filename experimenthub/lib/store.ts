@@ -80,6 +80,7 @@ interface StoreState {
 	setJobs: (jobs: Job[]) => void;
 	setActiveExperiment: (experiment: Experiment | null) => void;
 	setActiveJob: (job: Job | null) => void;
+	removeExperiment: (experimentId: number) => void;
 
 	setJobHistory: (jobId: string, job: JobWithHistory) => void;
 	updateJobStatus: (jobId: string, status: JobStatusUpdate) => void;
@@ -100,6 +101,16 @@ export const useStore = create<StoreState>()(
 			setJobs: (jobs) => set({ jobs }),
 			setActiveExperiment: (activeExperiment) => set({ activeExperiment }),
 			setActiveJob: (activeJob) => set({ activeJob }),
+			removeExperiment: (experimentId) =>
+				set((state) => ({
+					experiments: state.experiments.filter(
+						(exp) => exp.id !== experimentId
+					),
+					activeExperiment:
+						state.activeExperiment?.id === experimentId
+							? null
+							: state.activeExperiment,
+				})),
 			setJobHistory: (jobId, job) =>
 				set((state) => ({
 					jobsWithHistory: { ...state.jobsWithHistory, [jobId]: job },

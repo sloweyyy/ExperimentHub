@@ -169,6 +169,16 @@ def read_experiment(experiment_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Experiment not found")
     return experiment
 
+@app.delete("/experiments/{experiment_id}")
+def delete_experiment(experiment_id: int, db: Session = Depends(get_db)):
+    experiment = db.query(Experiment).filter(Experiment.id == experiment_id).first()
+    if not experiment:
+        raise HTTPException(status_code=404, detail="Experiment not found")
+    
+    db.delete(experiment)
+    db.commit()
+    return {"message": "Experiment deleted successfully"}
+
 # Jobs endpoints
 @app.post("/jobs/", response_model=JobResponse)
 def create_job(job: JobCreate, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):

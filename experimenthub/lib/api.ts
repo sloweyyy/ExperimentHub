@@ -24,6 +24,10 @@ export const experimentApi = {
 		const response = await api.post("/experiments/", data);
 		return response.data;
 	},
+
+	delete: async (id: number): Promise<void> => {
+		await api.delete(`/experiments/${id}`);
+	},
 };
 
 export const jobApi = {

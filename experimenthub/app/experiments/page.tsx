@@ -14,9 +14,11 @@ import { ExperimentForm } from "@/components/experiments/experiment-form";
 import { PageLayout } from "@/components/layout/page-layout";
 import { experimentApi } from "@/lib/api";
 import { useStore } from "@/lib/store";
+import { Trash2 } from "lucide-react";
+import { toast } from "sonner";
 
 export default function ExperimentsPage() {
-	const { experiments, setExperiments } = useStore();
+	const { experiments, setExperiments, removeExperiment } = useStore();
 	const [isFormOpen, setIsFormOpen] = useState(false);
 	const [isLoading, setIsLoading] = useState(true);
 
@@ -34,6 +36,20 @@ export default function ExperimentsPage() {
 
 		fetchExperiments();
 	}, [setExperiments]);
+
+	const handleDeleteExperiment = async (experimentId: number) => {
+		try {
+			await experimentApi.delete(experimentId);
+			removeExperiment(experimentId);
+			toast.success("Experiment deleted successfully");
+		} catch (error) {
+			console.error("Error deleting experiment:", error);
+			toast.error("Failed to delete experiment", {
+				description:
+					"There was an error deleting the experiment. Please try again.",
+			});
+		}
+	};
 
 	return (
 		<PageLayout>
@@ -69,6 +85,15 @@ export default function ExperimentsPage() {
 													View Details
 												</Button>
 											</Link>
+											<Button
+												variant="outline"
+												size="sm"
+												onClick={() => handleDeleteExperiment(experiment.id)}
+												className="px-2 text-destructive hover:bg-destructive hover:text-destructive-foreground"
+												title="Delete Experiment"
+											>
+												<Trash2 className="h-4 w-4" />
+											</Button>
 										</div>
 									</CardContent>
 								</Card>
