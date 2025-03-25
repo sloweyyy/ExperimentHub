@@ -36,6 +36,7 @@ import { Separator } from "@/components/ui/separator";
 
 import { Experiment, ModelType } from "@/lib/store";
 import { jobApi } from "@/lib/api";
+import { useStore } from "@/lib/store";
 
 const baseParametersSchema = z.object({
 	model_type: z.enum(["mlp", "cnn", "rnn"]),
@@ -117,6 +118,7 @@ interface JobFormProps {
 
 export function JobForm({ open, onOpenChange, experiment }: JobFormProps) {
 	const [isSubmitting, setIsSubmitting] = useState(false);
+	const { jobs, setJobs } = useStore();
 
 	const form = useForm<FormValues>({
 		resolver: zodResolver(formSchema),
@@ -176,16 +178,19 @@ export function JobForm({ open, onOpenChange, experiment }: JobFormProps) {
 		setIsSubmitting(true);
 
 		try {
+			// Set model type consistently
 			data.parameters.model_type = data.model_type;
 
-			const cleanedParameters = { ...data.parameters };
-
-			if (data.model_type !== "cnn") {
-				delete cleanedParameters.kernel_size;
-			}
-
+			// Create a clean version of parameters based on model type
+			let cleanedParameters;
 			if (data.model_type === "cnn") {
-				delete cleanedParameters.num_layers;
+				// For CNN, exclude num_layers
+				const { num_layers, ...rest } = data.parameters as any;
+				cleanedParameters = rest;
+			} else {
+				// For MLP and RNN, exclude kernel_size
+				const { kernel_size, ...rest } = data.parameters as any;
+				cleanedParameters = rest;
 			}
 
 			const payload = {
@@ -193,7 +198,11 @@ export function JobForm({ open, onOpenChange, experiment }: JobFormProps) {
 				parameters: cleanedParameters,
 			};
 
-			await jobApi.create(payload);
+			// Create the job
+			const newJob = await jobApi.create(payload);
+
+			// Update the store with the new job
+			setJobs([...jobs, newJob]);
 
 			toast.success("Job created successfully", {
 				description:
@@ -201,7 +210,6 @@ export function JobForm({ open, onOpenChange, experiment }: JobFormProps) {
 			});
 
 			onOpenChange(false);
-
 			form.reset();
 		} catch (error) {
 			console.error("Error creating job:", error);
