@@ -41,6 +41,7 @@ export default function JobsPage() {
 		fetchData();
 	}, [setJobs]);
 
+	// Group jobs by experiment
 	const jobsByExperiment: Record<number, Job[]> = jobs.reduce(
 		(acc: Record<number, Job[]>, job) => {
 			const experimentId = job.experiment_id;
@@ -53,6 +54,7 @@ export default function JobsPage() {
 		{}
 	);
 
+	// Sort experiments by most recent job
 	const sortedExperimentIds = Object.keys(jobsByExperiment)
 		.map((id) => parseInt(id, 10))
 		.sort((a, b) => {
@@ -63,6 +65,7 @@ export default function JobsPage() {
 			return bLatest - aLatest;
 		});
 
+	// Get experiment name by ID
 	const getExperimentName = (id: number) => {
 		const experiment = experiments.find((exp) => exp.id === id);
 		return experiment ? experiment.name : `Experiment ${id}`;

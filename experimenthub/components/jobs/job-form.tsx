@@ -139,52 +139,36 @@ export function JobForm({ open, onOpenChange, experiment }: JobFormProps) {
 	const watchModelType = form.watch("model_type");
 
 	const updateModelSpecificFields = (modelType: ModelType) => {
-		const currentValues = form.getValues();
-		const baseParams = {
-			optimizer: currentValues.parameters.optimizer,
-			learning_rate: currentValues.parameters.learning_rate,
-			batch_size: currentValues.parameters.batch_size,
-			epochs: currentValues.parameters.epochs,
-			use_scheduler: currentValues.parameters.use_scheduler,
-		};
+		form.setValue("parameters.kernel_size", undefined);
+		form.setValue("parameters.num_layers", undefined);
+
+		form.setValue("parameters.model_type", modelType);
 
 		switch (modelType) {
-			case "mlp": {
-				const mlpParams = {
-					...baseParams,
-					model_type: "mlp" as const,
-					hidden_size: modelDefaults.mlp.hidden_size,
-					dropout_rate: modelDefaults.mlp.dropout_rate,
-					num_layers: modelDefaults.mlp.num_layers,
-				};
-				form.setValue("model_type", modelType);
-				form.setValue("parameters", mlpParams);
+			case "mlp":
+				form.setValue("parameters.hidden_size", modelDefaults.mlp.hidden_size);
+				form.setValue(
+					"parameters.dropout_rate",
+					modelDefaults.mlp.dropout_rate
+				);
+				form.setValue("parameters.num_layers", modelDefaults.mlp.num_layers);
 				break;
-			}
-			case "cnn": {
-				const cnnParams = {
-					...baseParams,
-					model_type: "cnn" as const,
-					hidden_size: modelDefaults.cnn.hidden_size,
-					dropout_rate: modelDefaults.cnn.dropout_rate,
-					kernel_size: modelDefaults.cnn.kernel_size,
-				};
-				form.setValue("model_type", modelType);
-				form.setValue("parameters", cnnParams);
+			case "cnn":
+				form.setValue("parameters.hidden_size", modelDefaults.cnn.hidden_size);
+				form.setValue(
+					"parameters.dropout_rate",
+					modelDefaults.cnn.dropout_rate
+				);
+				form.setValue("parameters.kernel_size", modelDefaults.cnn.kernel_size);
 				break;
-			}
-			case "rnn": {
-				const rnnParams = {
-					...baseParams,
-					model_type: "rnn" as const,
-					hidden_size: modelDefaults.rnn.hidden_size,
-					dropout_rate: modelDefaults.rnn.dropout_rate,
-					num_layers: modelDefaults.rnn.num_layers,
-				};
-				form.setValue("model_type", modelType);
-				form.setValue("parameters", rnnParams);
+			case "rnn":
+				form.setValue("parameters.hidden_size", modelDefaults.rnn.hidden_size);
+				form.setValue(
+					"parameters.dropout_rate",
+					modelDefaults.rnn.dropout_rate
+				);
+				form.setValue("parameters.num_layers", modelDefaults.rnn.num_layers);
 				break;
-			}
 		}
 	};
 
@@ -192,36 +176,24 @@ export function JobForm({ open, onOpenChange, experiment }: JobFormProps) {
 		setIsSubmitting(true);
 
 		try {
-			const { parameters } = data;
-			const commonParams = {
-				optimizer: parameters.optimizer,
-				learning_rate: parameters.learning_rate,
-				batch_size: parameters.batch_size,
-				epochs: parameters.epochs,
-				use_scheduler: parameters.use_scheduler,
-				hidden_size: parameters.hidden_size,
-				dropout_rate: parameters.dropout_rate,
+			data.parameters.model_type = data.model_type;
+
+			const cleanedParameters = { ...data.parameters };
+
+			if (data.model_type !== "cnn") {
+				delete cleanedParameters.kernel_size;
+			}
+
+			if (data.model_type === "cnn") {
+				delete cleanedParameters.num_layers;
+			}
+
+			const payload = {
+				...data,
+				parameters: cleanedParameters,
 			};
 
-			const modelParams =
-				data.model_type === "cnn"
-					? {
-							kernel_size: (parameters as z.infer<typeof cnnParametersSchema>)
-								.kernel_size,
-					  }
-					: {
-							num_layers: (parameters as z.infer<typeof mlpParametersSchema>)
-								.num_layers,
-					  };
-
-			await jobApi.create({
-				...data,
-				parameters: {
-					...commonParams,
-					...modelParams,
-					model_type: data.model_type,
-				},
-			});
+			await jobApi.create(payload);
 
 			toast.success("Job created successfully", {
 				description:
