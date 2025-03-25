@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { wsService, jobApi } from "@/lib/api";
-import { useStore } from "@/lib/store";
+import { useStore, JobStatusUpdate } from "@/lib/store";
 import { formatDuration } from "@/lib/utils";
 
 interface JobListProps {
@@ -43,7 +43,7 @@ export function JobList({ experimentId }: JobListProps) {
 	useEffect(() => {
 		wsService.connect();
 
-		wsService.registerHandler("global", (data: any) => {
+		wsService.registerHandler("global", (data: JobStatusUpdate) => {
 			if (data.job_id) {
 				updateJobStatus(data.job_id, data);
 			}

@@ -53,21 +53,18 @@ export default function HomePage() {
 		fetchData();
 	}, [setExperiments, setJobs]);
 
-	// Calculate statistics
 	const totalExperiments = experiments.length;
 	const totalJobs = jobs.length;
 	const completedJobs = jobs.filter((job) => job.status === "completed").length;
 	const runningJobs = jobs.filter((job) => job.status === "running").length;
 	const failedJobs = jobs.filter((job) => job.status === "failed").length;
 
-	// Get best performing model
 	const bestJob = jobs
 		.filter(
 			(job) => job.best_accuracy !== undefined && job.best_accuracy !== null
 		)
 		.sort((a, b) => (b.best_accuracy || 0) - (a.best_accuracy || 0))[0];
 
-	// Get recent jobs
 	const recentJobs = [...jobs]
 		.sort(
 			(a, b) =>
@@ -75,7 +72,6 @@ export default function HomePage() {
 		)
 		.slice(0, 5);
 
-	// Format date in a readable way
 	const formatDate = (dateString: string) => {
 		const date = new Date(dateString);
 		return new Intl.DateTimeFormat("en-US", {
@@ -86,7 +82,6 @@ export default function HomePage() {
 		}).format(date);
 	};
 
-	// Status badge renderer
 	const renderStatusBadge = (status: JobStatus) => {
 		switch (status) {
 			case "pending":

@@ -5,6 +5,11 @@ experimenthub/out
 experimenthub/npm-debug.log*
 experimenthub/yarn-debug.log*
 experimenthub/yarn-error.log*
+experimenthub/.env
+experimenthub/.env.*
+experimenthub/coverage
+experimenthub/.next
+experimenthub/build
 
 # Python
 backend/__pycache__/
@@ -15,6 +20,13 @@ backend/.env
 backend/env
 backend/.venv
 backend/ENV
+backend/*.log
+backend/.pytest_cache
+backend/.coverage
+backend/htmlcov
+backend/dist
+backend/build
+backend/*.egg-info
 
 # General
 .git
@@ -25,6 +37,11 @@ backend/ENV
 **/.DS_Store
 README.md
 LICENSE
+*.md
+.vscode
+.idea
+*.swp
+*.swo
 
 # Docker files
 Dockerfile*

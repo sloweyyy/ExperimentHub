@@ -5,13 +5,13 @@ from datetime import datetime
 import json
 import os
 
-# Create SQLite database
-SQLALCHEMY_DATABASE_URL = "sqlite:///./experiment_db.sqlite"
+DATABASE_PATH = os.getenv("DATABASE_PATH", "experiment_db.sqlite")
+
+SQLALCHEMY_DATABASE_URL = f"sqlite:///{DATABASE_PATH}"
 engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
-# Database dependency
 def get_db():
     db = SessionLocal()
     try:
@@ -19,7 +19,6 @@ def get_db():
     finally:
         db.close()
 
-# Database models
 class Experiment(Base):
     __tablename__ = "experiments"
     
@@ -42,19 +41,17 @@ class Job(Base):
     model_type = Column(String, nullable=False)
     parameters = Column(JSON, nullable=False)
     
-    # Results
     best_accuracy = Column(Float, nullable=True)
     total_time = Column(Float, nullable=True)
     epochs_completed = Column(Integer, default=0)
     history = Column(JSON, nullable=True)
     
-    # Timestamps
     created_at = Column(DateTime, default=datetime.utcnow)
     started_at = Column(DateTime, nullable=True)
     completed_at = Column(DateTime, nullable=True)
     
     experiment = relationship("Experiment", back_populates="jobs")
 
-# Create tables
 def init_db():
+    os.makedirs(os.path.dirname(DATABASE_PATH), exist_ok=True)
     Base.metadata.create_all(bind=engine) 

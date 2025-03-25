@@ -6,13 +6,17 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - ./backend/experiment_db.sqlite:/app/experiment_db.sqlite
+      - sqlite_data:/app/data
+    environment:
+      - DATABASE_PATH=/app/data/experiment_db.sqlite
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-    restart: unless-stopped
+      interval: 10s
+      timeout: 5s
+      retries: 2
+      start_period: 5s
+    restart: on-failure
+    stop_grace_period: 10s
 
   frontend:
     build:
@@ -24,4 +28,9 @@ services:
       - NEXT_PUBLIC_API_URL=http://localhost:8000
     depends_on:
       - backend
-    restart: unless-stopped 
+    restart: on-failure
+    stop_grace_period: 5s
+
+volumes:
+  sqlite_data:
+    driver: local 

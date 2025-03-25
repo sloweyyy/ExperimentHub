@@ -1,4 +1,5 @@
 import axios from "axios";
+import { JobStatusUpdate } from "./store";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -89,59 +90,73 @@ export type JobStatus = {
 export class WebSocketService {
 	private socket: WebSocket | null = null;
 	private clientId: string;
-	private messageHandlers: Map<string, (data: JobStatus) => void> = new Map();
+	private messageHandlers: Map<string, (data: JobStatusUpdate) => void> =
+		new Map();
+	private reconnectAttempts = 0;
+	private maxReconnectAttempts = 5;
+	private reconnectTimeout = 1000; // Start with 1 second
 
 	constructor() {
 		this.clientId = Math.random().toString(36).substring(2, 15);
 	}
 
 	connect() {
-		if (this.socket?.readyState === WebSocket.OPEN) return;
-
-		const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-		const wsUrl = apiUrl.replace(/^http/, "ws");
-
-		try {
-			this.socket = new WebSocket(`${wsUrl}/ws/${this.clientId}`);
-
-			this.socket.onopen = () => {
-				console.log("WebSocket connection established");
-			};
-
-			this.socket.onmessage = (event) => {
-				try {
-					const message = JSON.parse(event.data);
-					const jobId = message.job_id;
-					const data = message.data;
-
-					if (this.messageHandlers.has(jobId)) {
-						this.messageHandlers.get(jobId)!(data);
-					}
-
-					if (this.messageHandlers.has("global")) {
-						this.messageHandlers.get("global")!(message);
-					}
-				} catch (error) {
-					console.error("Error parsing WebSocket message:", error);
-				}
-			};
-
-			this.socket.onerror = () => {
-				console.warn("WebSocket connection error - will attempt to reconnect");
-			};
-
-			this.socket.onclose = (event) => {
-				console.log(
-					`WebSocket connection closed (code: ${event.code}, reason: ${
-						event.reason || "No reason provided"
-					})`
-				);
-				setTimeout(() => this.connect(), 5000);
-			};
-		} catch (err) {
-			console.error("Failed to create WebSocket connection:", err);
-			setTimeout(() => this.connect(), 5000);
+		if (this.socket?.readyState === WebSocket.OPEN) {
+			return;
 		}
+
+		const wsUrl = `${
+			process.env.NEXT_PUBLIC_API_URL?.replace("http", "ws") ||
+			"ws://localhost:8000"
+		}/ws/${this.clientId}`;
+		this.socket = new WebSocket(wsUrl);
+
+		this.socket.onopen = () => {
+			console.log("WebSocket connection established");
+			this.reconnectAttempts = 0;
+			this.reconnectTimeout = 1000;
+		};
+
+		this.socket.onmessage = (event) => {
+			try {
+				const data = JSON.parse(event.data);
+				const handler = this.messageHandlers.get(data.job_id);
+				if (handler) {
+					handler(data);
+				}
+			} catch (error) {
+				console.error("Error processing WebSocket message:", error);
+			}
+		};
+
+		this.socket.onclose = (event) => {
+			console.log(
+				`WebSocket connection closed (code: ${event.code}, reason: ${event.reason})`
+			);
+			this.handleReconnect();
+		};
+
+		this.socket.onerror = (error) => {
+			console.error("WebSocket error:", error);
+		};
+	}
+
+	private handleReconnect() {
+		if (this.reconnectAttempts >= this.maxReconnectAttempts) {
+			console.error("Max reconnection attempts reached");
+			return;
+		}
+
+		this.reconnectAttempts++;
+		console.log(
+			`Attempting to reconnect (${this.reconnectAttempts}/${this.maxReconnectAttempts})...`
+		);
+
+		setTimeout(() => {
+			this.connect();
+		}, this.reconnectTimeout);
+
+		this.reconnectTimeout *= 2;
 	}
 
 	disconnect() {
@@ -149,9 +164,12 @@ export class WebSocketService {
 			this.socket.close();
 			this.socket = null;
 		}
+		this.messageHandlers.clear();
+		this.reconnectAttempts = 0;
+		this.reconnectTimeout = 1000;
 	}
 
-	registerHandler(jobId: string, handler: (data: JobStatus) => void) {
+	registerHandler(jobId: string, handler: (data: JobStatusUpdate) => void) {
 		this.messageHandlers.set(jobId, handler);
 	}
 
