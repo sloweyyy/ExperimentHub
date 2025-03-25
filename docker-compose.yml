@@ -1,27 +1,53 @@
+version: '3.8'
+
 services:
+  frontend:
+    build:
+      context: ./experimenthub
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./experimenthub:/app
+      - /app/node_modules
+    environment:
+      - NEXT_PUBLIC_API_URL=http://backend:8000
+    depends_on:
+      - backend
+    networks:
+      - experimenthub-network
+
   backend:
     build:
-      context: .
-      dockerfile: Dockerfile.backend
+      context: ./backend
+      dockerfile: Dockerfile
     ports:
       - "8000:8000"
     volumes:
-      - ./backend/experiment_db.sqlite:/app/experiment_db.sqlite
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-    restart: unless-stopped
-
-  frontend:
-    build:
-      context: .
-      dockerfile: Dockerfile.frontend
-    ports:
-      - "3000:3000"
+      - ./backend:/app
     environment:
-      - NEXT_PUBLIC_API_URL=http://localhost:8000
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/experimenthub
     depends_on:
-      - backend
-    restart: unless-stopped 
+      - db
+    networks:
+      - experimenthub-network
+
+  db:
+    image: postgres:15-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=experimenthub
+    ports:
+      - "5432:5432"
+    networks:
+      - experimenthub-network
+
+networks:
+  experimenthub-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
