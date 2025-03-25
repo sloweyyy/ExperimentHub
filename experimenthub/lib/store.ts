@@ -98,7 +98,20 @@ export const useStore = create<StoreState>()(
 			activeJob: null,
 
 			setExperiments: (experiments) => set({ experiments }),
-			setJobs: (jobs) => set({ jobs }),
+			setJobs: (jobs) =>
+				set((state) => {
+					const existingJobIds = new Map(
+						state.jobs.map((job) => [job.job_id, job])
+					);
+
+					for (const job of jobs) {
+						existingJobIds.set(job.job_id, job);
+					}
+
+					const dedupedJobs = Array.from(existingJobIds.values());
+
+					return { jobs: dedupedJobs };
+				}),
 			setActiveExperiment: (activeExperiment) => set({ activeExperiment }),
 			setActiveJob: (activeJob) => set({ activeJob }),
 			removeExperiment: (experimentId) =>

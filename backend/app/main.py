@@ -117,12 +117,12 @@ def run_training_job(job_id: str, model_type: str, parameters: dict):
     try:
         # Create model
         model_params = {k: v for k, v in parameters.items() 
-                       if k in ['dropout_rate', 'hidden_size', 'kernel_size']}
+                       if k in ['dropout_rate', 'hidden_size', 'kernel_size', 'num_layers']}
         model = create_model(model_type, **model_params)
         
         # Training params
         training_params = {k: v for k, v in parameters.items() 
-                          if k not in ['dropout_rate', 'hidden_size', 'kernel_size']}
+                          if k not in ['dropout_rate', 'hidden_size', 'kernel_size', 'num_layers']}
         
         # Setup callback for status updates
         def status_callback(status_data):
@@ -190,14 +190,68 @@ def create_job(job: JobCreate, background_tasks: BackgroundTasks, db: Session = 
     # Check for duplicate job
     existing_job = db.query(Job).filter(
         Job.experiment_id == job.experiment_id,
-        Job.model_type == job.model_type,
-        Job.parameters == job.parameters.dict()
-    ).first()
+        Job.model_type == job.model_type
+    ).all()
     
-    if existing_job:
-        return existing_job
+    # Debug logging
+    print(f"Creating job: {job.name}, Model: {job.model_type}, Params: {job.parameters}")
+    print(f"Found {len(existing_job)} existing jobs with same experiment and model type")
     
-    # Create new job
+    # Check for exact parameter matches by comparing individual parameters
+    # Some parameters like dropout_rate, hidden_size, etc. are allowed to be different
+    duplicate_found = False
+    for ej in existing_job:
+        ej_params = ej.parameters
+        job_params = job.parameters.dict()
+        
+        print(f"Comparing with job: {ej.name}, ID: {ej.job_id}")
+        print(f"Existing params: {ej_params}")
+        print(f"New params: {job_params}")
+        
+        # Compare essential parameters
+        core_match = (
+            ej_params.get('optimizer') == job_params.get('optimizer') and
+            ej_params.get('learning_rate') == job_params.get('learning_rate') and
+            ej_params.get('batch_size') == job_params.get('batch_size') and
+            ej_params.get('epochs') == job_params.get('epochs')
+        )
+        
+        print(f"Core parameters match: {core_match}")
+        
+        # Check model-specific parameters
+        specific_params_match = False  # Start with False
+        if job.model_type == 'mlp':
+            # For MLP, compare hidden_size and dropout_rate
+            ej_hidden = ej_params.get('hidden_size')
+            new_hidden = job_params.get('hidden_size')
+            ej_dropout = ej_params.get('dropout_rate') 
+            new_dropout = job_params.get('dropout_rate')
+            ej_num_layers = ej_params.get('num_layers')
+            new_num_layers = job_params.get('num_layers')
+            
+            specific_params_match = (
+                ej_hidden == new_hidden and 
+                ej_dropout == new_dropout and
+                ej_num_layers == new_num_layers
+            )
+            print(f"MLP specific - hidden: {ej_hidden} vs {new_hidden}, dropout: {ej_dropout} vs {new_dropout}, layers: {ej_num_layers} vs {new_num_layers}")
+        elif job.model_type == 'cnn':
+            # For CNN, compare kernel_size
+            ej_kernel = ej_params.get('kernel_size')
+            new_kernel = job_params.get('kernel_size')
+            specific_params_match = (ej_kernel == new_kernel)
+            print(f"CNN specific - kernel: {ej_kernel} vs {new_kernel}")
+        
+        print(f"Specific parameters match: {specific_params_match}")
+        
+        # If both core and specific parameters match, it's a duplicate
+        if core_match and specific_params_match:
+            print(f"DUPLICATE FOUND - returning existing job {ej.job_id}")
+            duplicate_found = True
+            return ej
+    
+    print("No duplicate found - creating new job")
+    # If no duplicate found, create new job
     job_id = str(uuid.uuid4())
     db_job = Job(
         job_id=job_id,

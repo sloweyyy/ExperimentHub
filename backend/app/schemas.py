@@ -29,6 +29,7 @@ class JobParameters(BaseModel):
     dropout_rate: Optional[float] = Field(0.5, description="Dropout rate")
     hidden_size: Optional[int] = Field(128, description="Hidden layer size")
     kernel_size: Optional[int] = Field(3, description="Kernel size for CNN")
+    num_layers: Optional[int] = Field(2, description="Number of hidden layers for MLP/RNN")
     use_scheduler: Optional[bool] = Field(False, description="Use learning rate scheduler")
 
 class JobBase(BaseModel):

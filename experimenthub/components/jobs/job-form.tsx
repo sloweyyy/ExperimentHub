@@ -34,7 +34,7 @@ import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 
-import { Experiment, ModelType } from "@/lib/store";
+import { Experiment, ModelType, JobParameters } from "@/lib/store";
 import { jobApi } from "@/lib/api";
 import { useStore } from "@/lib/store";
 
@@ -141,36 +141,20 @@ export function JobForm({ open, onOpenChange, experiment }: JobFormProps) {
 	const watchModelType = form.watch("model_type");
 
 	const updateModelSpecificFields = (modelType: ModelType) => {
-		form.setValue("parameters.kernel_size", undefined);
-		form.setValue("parameters.num_layers", undefined);
-
 		form.setValue("parameters.model_type", modelType);
 
-		switch (modelType) {
-			case "mlp":
-				form.setValue("parameters.hidden_size", modelDefaults.mlp.hidden_size);
-				form.setValue(
-					"parameters.dropout_rate",
-					modelDefaults.mlp.dropout_rate
-				);
-				form.setValue("parameters.num_layers", modelDefaults.mlp.num_layers);
-				break;
-			case "cnn":
-				form.setValue("parameters.hidden_size", modelDefaults.cnn.hidden_size);
-				form.setValue(
-					"parameters.dropout_rate",
-					modelDefaults.cnn.dropout_rate
-				);
-				form.setValue("parameters.kernel_size", modelDefaults.cnn.kernel_size);
-				break;
-			case "rnn":
-				form.setValue("parameters.hidden_size", modelDefaults.rnn.hidden_size);
-				form.setValue(
-					"parameters.dropout_rate",
-					modelDefaults.rnn.dropout_rate
-				);
-				form.setValue("parameters.num_layers", modelDefaults.rnn.num_layers);
-				break;
+		if (modelType === "cnn") {
+			form.setValue("parameters.hidden_size", modelDefaults.cnn.hidden_size);
+			form.setValue("parameters.dropout_rate", modelDefaults.cnn.dropout_rate);
+			form.setValue("parameters.kernel_size", modelDefaults.cnn.kernel_size);
+			form.unregister("parameters.num_layers");
+		} else if (modelType === "mlp" || modelType === "rnn") {
+			const defaults =
+				modelType === "mlp" ? modelDefaults.mlp : modelDefaults.rnn;
+			form.setValue("parameters.hidden_size", defaults.hidden_size);
+			form.setValue("parameters.dropout_rate", defaults.dropout_rate);
+			form.setValue("parameters.num_layers", defaults.num_layers);
+			form.unregister("parameters.kernel_size");
 		}
 	};
 
@@ -178,19 +162,54 @@ export function JobForm({ open, onOpenChange, experiment }: JobFormProps) {
 		setIsSubmitting(true);
 
 		try {
-			// Set model type consistently
 			data.parameters.model_type = data.model_type;
 
-			// Create a clean version of parameters based on model type
-			let cleanedParameters;
+			if (data.model_type === "mlp") {
+				const mlpParams = data.parameters as z.infer<
+					typeof mlpParametersSchema
+				>;
+				console.log("Submitting MLP job with parameters:", {
+					...data.parameters,
+					num_layers: mlpParams.num_layers,
+				});
+			}
+
+			let cleanedParameters: JobParameters;
+
 			if (data.model_type === "cnn") {
-				// For CNN, exclude num_layers
-				const { num_layers, ...rest } = data.parameters as any;
-				cleanedParameters = rest;
+				const cnnParams = data.parameters as z.infer<
+					typeof cnnParametersSchema
+				>;
+				cleanedParameters = {
+					model_type: data.parameters.model_type,
+					optimizer: data.parameters.optimizer,
+					learning_rate: data.parameters.learning_rate,
+					batch_size: data.parameters.batch_size,
+					epochs: data.parameters.epochs,
+					dropout_rate: data.parameters.dropout_rate,
+					hidden_size: data.parameters.hidden_size,
+					use_scheduler: data.parameters.use_scheduler,
+					kernel_size: cnnParams.kernel_size,
+				};
+			} else if (data.model_type === "mlp" || data.model_type === "rnn") {
+				const layerParams = data.parameters as
+					| z.infer<typeof mlpParametersSchema>
+					| z.infer<typeof rnnParametersSchema>;
+				cleanedParameters = {
+					model_type: data.parameters.model_type,
+					optimizer: data.parameters.optimizer,
+					learning_rate: data.parameters.learning_rate,
+					batch_size: data.parameters.batch_size,
+					epochs: data.parameters.epochs,
+					dropout_rate: data.parameters.dropout_rate,
+					hidden_size: data.parameters.hidden_size,
+					use_scheduler: data.parameters.use_scheduler,
+					num_layers: layerParams.num_layers,
+				};
 			} else {
-				// For MLP and RNN, exclude kernel_size
-				const { kernel_size, ...rest } = data.parameters as any;
-				cleanedParameters = rest;
+				cleanedParameters = {
+					...data.parameters,
+				};
 			}
 
 			const payload = {
@@ -198,16 +217,37 @@ export function JobForm({ open, onOpenChange, experiment }: JobFormProps) {
 				parameters: cleanedParameters,
 			};
 
-			// Create the job
 			const newJob = await jobApi.create(payload);
+			console.log("Job API response:", newJob);
 
-			// Update the store with the new job
+			const jobAlreadyExists = newJob.name !== data.name;
+
+			if (jobAlreadyExists) {
+				console.log("Received existing job instead of creating a new one");
+				toast.warning(`Job with these parameters already exists`, {
+					description: `Using existing job "${newJob.name}" with identical parameters.`,
+				});
+			} else {
+				console.log("New job created successfully");
+				toast.success(`Job "${newJob.name}" created`, {
+					description: `${data.model_type.toUpperCase()} model with ${
+						data.parameters.epochs
+					} epochs. Started training and added to queue.`,
+				});
+			}
+
 			setJobs([...jobs, newJob]);
 
-			toast.success("Job created successfully", {
-				description:
-					"Your training job has been created and added to the queue.",
-			});
+			setTimeout(async () => {
+				try {
+					console.log("Refreshing jobs for experiment:", experiment.id);
+					const refreshedJobs = await jobApi.getAll(experiment.id);
+					console.log("Refreshed jobs:", refreshedJobs);
+					setJobs(refreshedJobs);
+				} catch (error) {
+					console.error("Error refreshing jobs:", error);
+				}
+			}, 500);
 
 			onOpenChange(false);
 			form.reset();

@@ -20,20 +20,56 @@ import {
 	Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
-import { wsService, jobApi } from "@/lib/api";
-import { useStore } from "@/lib/store";
+import { wsService, jobApi, JobStatus } from "@/lib/api";
+import { useStore, JobStatusUpdate } from "@/lib/store";
 import { formatDuration } from "@/lib/utils";
 
 interface JobListProps {
 	experimentId: number;
 }
 
+type GlobalJobStatus = JobStatus & {
+	[key: string]: unknown;
+};
+
 export function JobList({ experimentId }: JobListProps) {
 	const router = useRouter();
 	const { jobs, jobStatus, updateJobStatus, removeJob } = useStore();
 
-	const experimentJobs = jobs.filter(
-		(job) => job.experiment_id === experimentId
+	console.log(
+		"All jobs:",
+		jobs.map((j) => ({
+			id: j.id,
+			job_id: j.job_id,
+			name: j.name,
+			exp_id: j.experiment_id,
+		}))
+	);
+	console.log("Current experiment ID:", experimentId);
+
+	const uniqueJobIds = new Set();
+	const experimentJobs = jobs
+		.filter((job) => {
+			const match = job.experiment_id === experimentId;
+			console.log(
+				`Job ${job.name} (${job.job_id}) experiment_id: ${job.experiment_id}, matches ${experimentId}? ${match}`
+			);
+			return match;
+		})
+		.filter((job) => {
+			if (uniqueJobIds.has(job.job_id)) {
+				console.warn(
+					`Duplicate job_id found: ${job.job_id} for job ${job.name}. Filtering out duplicate.`
+				);
+				return false;
+			}
+			uniqueJobIds.add(job.job_id);
+			return true;
+		});
+
+	console.log(
+		"Filtered experiment jobs:",
+		experimentJobs.map((j) => ({ id: j.id, job_id: j.job_id, name: j.name }))
 	);
 
 	const sortedJobs = [...experimentJobs].sort((a, b) => {
@@ -43,11 +79,37 @@ export function JobList({ experimentId }: JobListProps) {
 	useEffect(() => {
 		wsService.connect();
 
-		wsService.registerHandler("global", (data: any) => {
+		const globalHandler = (data: GlobalJobStatus) => {
 			if (data.job_id) {
-				updateJobStatus(data.job_id, data);
+				let bestAccuracy: number | undefined = undefined;
+				if (data.final_results && typeof data.final_results === "object") {
+					const results = data.final_results as Record<string, unknown>;
+					if ("accuracy" in results && typeof results.accuracy === "number") {
+						bestAccuracy = results.accuracy;
+					}
+				}
+
+				const statusUpdate: JobStatusUpdate = {
+					job_id: data.job_id,
+					status: data.status,
+					epoch: data.epoch ?? 0,
+					epochs_total: data.epochs_total ?? 0,
+					train_loss: data.train_loss,
+					val_loss: data.val_loss,
+					train_accuracy: data.train_accuracy,
+					val_accuracy: data.val_accuracy,
+					epoch_time: data.progress ?? 0,
+					best_accuracy: bestAccuracy,
+				};
+
+				updateJobStatus(data.job_id, statusUpdate);
 			}
-		});
+		};
+
+		wsService.registerHandler(
+			"global",
+			globalHandler as (data: JobStatus) => void
+		);
 
 		return () => {
 			wsService.disconnect();
@@ -165,7 +227,7 @@ export function JobList({ experimentId }: JobListProps) {
 								job.status === "running" || job.status === "pending";
 
 							return (
-								<TableRow key={job.job_id}>
+								<TableRow key={`${job.id}-${job.job_id}`}>
 									<TableCell className="font-medium">{job.name}</TableCell>
 									<TableCell>{renderStatusBadge(job.status)}</TableCell>
 									<TableCell>

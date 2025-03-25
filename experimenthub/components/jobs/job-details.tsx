@@ -30,13 +30,36 @@ import {
 	Legend,
 	ResponsiveContainer,
 } from "recharts";
-import { jobApi, wsService } from "@/lib/api";
-import { useStore, JobWithHistory, JobParameters } from "@/lib/store";
+import { jobApi, wsService, JobStatus } from "@/lib/api";
+import {
+	useStore,
+	JobWithHistory,
+	JobParameters,
+	JobStatusUpdate,
+} from "@/lib/store";
 import { formatDuration } from "@/lib/utils";
 
 interface JobDetailsProps {
 	jobId: string;
 }
+
+const convertToJobStatusUpdate = (
+	jobId: string,
+	data: JobStatus
+): JobStatusUpdate => {
+	return {
+		job_id: jobId,
+		status: data.status,
+		epoch: data.epoch ?? 0,
+		epochs_total: data.epochs_total ?? 0,
+		train_loss: data.train_loss,
+		val_loss: data.val_loss,
+		train_accuracy: data.train_accuracy,
+		val_accuracy: data.val_accuracy,
+		epoch_time: data.progress ?? 0,
+		best_accuracy: data.final_results?.accuracy as number | undefined,
+	};
+};
 
 export function JobDetails({ jobId }: JobDetailsProps) {
 	const [activeTab, setActiveTab] = useState("overview");
@@ -68,7 +91,8 @@ export function JobDetails({ jobId }: JobDetailsProps) {
 		wsService.connect();
 
 		wsService.registerHandler(jobId, (data) => {
-			updateJobStatus(jobId, data);
+			const statusUpdate = convertToJobStatusUpdate(jobId, data);
+			updateJobStatus(jobId, statusUpdate);
 		});
 
 		return () => {
