@@ -5,135 +5,61 @@
   <p>Track, compare, and optimize your ML models with ease</p>
 </div>
 
-![image](https://github.com/user-attachments/assets/765d961d-afca-4b16-b1dd-4006e8cb0f87)
+![ExperimentHub Dashboard](https://github.com/user-attachments/assets/765d961d-afca-4b16-b1dd-4006e8cb0f87)
 
-## 🌟 Features
+## Features
 
-- **Experiment Organization**: Group related ML training jobs into experiments
-- **Multiple Model Support**: Train and evaluate MLP, CNN, and RNN architectures
-- **Real-time Monitoring**: Track training progress and metrics with WebSocket updates
-- **Interactive Dashboard**: Visualize performance metrics and experiment results
-- **Hyperparameter Management**: Configure and test different parameter combinations
-- **Job Control**: Start, stop, and cancel training jobs as needed
+- **Experiment Management**: Create, organize, and track machine learning experiments
+- **Model Training**: Train MLP, CNN, and RNN models with customizable hyperparameters
+- **Real-time Monitoring**: Track metrics and progress during training via WebSockets
+- **Interactive Visualizations**: Compare performance metrics across models and experiments
+- **Job Queue**: Manage multiple training jobs simultaneously
 
-## 🔧 Tech Stack
+## Project Structure
 
-### Frontend
-- **Framework**: [Next.js 15](https://nextjs.org/) with React 19
-- **UI Components**: [shadcn/ui](https://ui.shadcn.com/) with Tailwind CSS
-- **State Management**: [Zustand](https://github.com/pmndrs/zustand) with persist middleware
-- **API Client**: Axios with WebSocket integration
-- **Form Handling**: React Hook Form with Zod validation
-- **Data Visualization**: Recharts for performance metrics
-- **Notifications**: Sonner toast notifications
+The project is organized into two main components:
 
-### Backend
-- **API Framework**: [FastAPI](https://fastapi.tiangolo.com/) with Pydantic schemas
-- **ML Library**: PyTorch for model training
-- **Database**: SQLAlchemy ORM with SQLite
-- **Async**: Uvicorn ASGI server with WebSocket support
-- **Task Management**: Background tasks for training jobs
+- [**Frontend**](experimenthub/README.md): Next.js-based web interface (React 19, Tailwind CSS)
+- [**Backend**](backend/README.md): FastAPI server with PyTorch model training
 
-### DevOps
-- **Containerization**: Docker with multi-stage builds
-- **Orchestration**: Docker Compose for service coordination
-- **Deployment**: Ready-made configuration for easy deployment
+## Quick Start
 
-## 🚀 Installation & Setup
+### Using Docker
 
-### Docker (Recommended)
+The easiest way to run the entire application stack is with Docker Compose:
 
-#### Prerequisites
-- [Docker](https://docs.docker.com/get-docker/)
-- [Docker Compose](https://docs.docker.com/compose/install/)
+```bash
+# Start all services
+docker-compose up
 
-#### Running the Application
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/sloweyyy/ExperimentHub
-   cd ExperimentHub
-   ```
+# Access the frontend at http://localhost:3000
+# Access the backend API at http://localhost:8000
+```
 
-2. Build and start the containers:
-   ```bash
-   docker compose up --build
-   ```
+### Manual Setup
 
-3. Access the application:
-   - Frontend: http://localhost:3000
-   - Backend API: http://localhost:8000 
-   - API Docs: http://localhost:8000/docs
+For development, you can set up the frontend and backend separately:
 
-### Development Mode
-
-If you want to run the application in development mode with hot reloading:
-
-1. Start only the backend:
-   ```bash
-   docker compose up backend
-   ```
-
-2. Run the frontend in development mode:
-   ```bash
-   cd experimenthub
-   npm install
-   npm run dev
-   ```
-
-### Manual Setup (Without Docker)
-
-#### Backend
-1. Set up a Python virtual environment:
+1. **Backend**:
    ```bash
    cd backend
    python -m venv venv
    source venv/bin/activate  # On Windows: venv\Scripts\activate
+   pip install -e ".[dev]"
+   uvicorn app.main:app --reload
    ```
 
-2. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-3. Run the server:
-   ```bash
-   python run_server.py
-   ```
-
-#### Frontend
-1. Install Node.js dependencies:
+2. **Frontend**:
    ```bash
    cd experimenthub
    npm install
-   ```
-
-2. Start the development server:
-   ```bash
    npm run dev
    ```
 
-## 📦 Project Structure
+## Development
 
-```
-ExperimentHub/
-├── backend/                # Python FastAPI backend
-│   ├── app/                # Application code
-│   │   ├── database.py     # Database models and connection
-│   │   ├── main.py         # Main FastAPI application
-│   │   └── schemas.py      # Pydantic schemas
-│   ├── models/             # ML model definitions
-│   ├── data/               # Training datasets
-│   └── requirements.txt    # Python dependencies
-├── experimenthub/          # Next.js frontend
-│   ├── app/                # Next.js pages
-│   ├── components/         # React components
-│   ├── lib/                # Utilities and API client
-│   └── public/             # Static assets
-├── docker-compose.yml      # Docker Compose configuration
-├── Dockerfile.backend      # Backend Docker configuration
-└── Dockerfile.frontend     # Frontend Docker configuration
-```
+See the individual README files in the [frontend](experimenthub/README.md) and [backend](backend/README.md) directories for detailed development instructions.
 
-## 📝 License
+## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+MIT
