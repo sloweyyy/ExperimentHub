@@ -7,6 +7,29 @@
 
 ![ExperimentHub Dashboard](https://github.com/user-attachments/assets/765d961d-afca-4b16-b1dd-4006e8cb0f87)
 
+## System Architecture
+
+![System Architecture](https://github.com/user-attachments/assets/72a42c4c-f6c8-4fbc-b317-f8e0fb5805b9)
+
+The ExperimentHub platform uses a modern containerized architecture with the following components:
+
+- **Frontend Container**:
+  - Next.js Application (UI) for the main interface
+  - Job Management UI for monitoring training progress
+  - Communicates with backend via REST API and WebSocket for real-time updates
+
+- **Backend Container**:
+  - FastAPI Server handling API requests and WebSocket connections
+  - ML Model Training Modules for executing experiments
+  - Integrates with SQLite for job/experiment tracking
+  - Manages MNIST dataset access for training
+
+- **Data & Persistence**:
+  - SQLite Database for storing experiment metadata and results
+  - MNIST Dataset for model training
+
+The system uses Docker Compose for orchestration, making it easy to deploy and scale. The architecture ensures real-time communication between components through WebSocket connections for live training updates and REST APIs for general operations.
+
 ## Features
 
 - **Experiment Management**: Create, organize, and track machine learning experiments
