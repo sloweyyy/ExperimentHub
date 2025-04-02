@@ -7,7 +7,7 @@
 
 ![ExperimentHub Dashboard](https://github.com/user-attachments/assets/765d961d-afca-4b16-b1dd-4006e8cb0f87)
 
-## System Architecture
+## System Architectu
 
 ![System Architecture](https://github.com/user-attachments/assets/72a42c4c-f6c8-4fbc-b317-f8e0fb5805b9)
 
