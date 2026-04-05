@@ -4,6 +4,7 @@ Database module for the Experiment Hub application.
 This module defines database models, connection setup, and utility functions
 for database operations.
 """
+
 import os
 from datetime import datetime
 from typing import Generator

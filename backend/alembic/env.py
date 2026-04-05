@@ -9,7 +9,7 @@ from alembic import context
 # Add the backend directory to the path so we can import our models.
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from app.database import Base, DATABASE_URL  # noqa: E402
+from app.database import DATABASE_URL, Base  # noqa: E402
 
 config = context.config
 

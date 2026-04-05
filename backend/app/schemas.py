@@ -7,10 +7,10 @@ from typing import Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
-
 # ---------------------------------------------------------------------------
 # Experiment schemas
 # ---------------------------------------------------------------------------
+
 
 class ExperimentBase(BaseModel):
     name: str = Field(..., description="Human-readable experiment name")
@@ -69,6 +69,7 @@ class ExperimentResponse(ExperimentBase):
 # Job schemas
 # ---------------------------------------------------------------------------
 
+
 class JobParameters(BaseModel):
     """Hyper-parameters for a training job."""
 
@@ -78,21 +79,13 @@ class JobParameters(BaseModel):
     )
     epochs: int = Field(5, description="Number of training epochs", ge=1)
     batch_size: int = Field(64, description="Mini-batch size for training", ge=1)
-    learning_rate: float = Field(
-        0.01, description="Initial learning rate", gt=0
-    )
-    optimizer: str = Field(
-        "sgd", description="Optimizer algorithm (sgd or adam)"
-    )
-    momentum: Optional[float] = Field(
-        0.5, description="Momentum for the SGD optimizer"
-    )
+    learning_rate: float = Field(0.01, description="Initial learning rate", gt=0)
+    optimizer: str = Field("sgd", description="Optimizer algorithm (sgd or adam)")
+    momentum: Optional[float] = Field(0.5, description="Momentum for the SGD optimizer")
     dropout_rate: Optional[float] = Field(
         0.5, description="Dropout probability applied during training"
     )
-    hidden_size: Optional[int] = Field(
-        128, description="Width of hidden layers"
-    )
+    hidden_size: Optional[int] = Field(128, description="Width of hidden layers")
     kernel_size: Optional[int] = Field(
         3, description="Convolution kernel size (CNN only)"
     )
@@ -126,18 +119,14 @@ class JobParameters(BaseModel):
 
 class JobBase(BaseModel):
     name: str = Field(..., description="Human-readable job name")
-    model_type: str = Field(
-        "cnn", description="Model architecture (cnn, mlp, or rnn)"
-    )
+    model_type: str = Field("cnn", description="Model architecture (cnn, mlp, or rnn)")
     parameters: JobParameters
 
 
 class JobCreate(JobBase):
     """Payload for creating a new training job."""
 
-    experiment_id: int = Field(
-        ..., description="ID of the parent experiment"
-    )
+    experiment_id: int = Field(..., description="ID of the parent experiment")
 
     model_config = {
         "json_schema_extra": {
@@ -173,9 +162,7 @@ class JobResponse(JobBase):
     total_time: Optional[float] = Field(
         None, description="Total training wall-clock time in seconds"
     )
-    epochs_completed: int = Field(
-        0, description="Number of epochs completed so far"
-    )
+    epochs_completed: int = Field(0, description="Number of epochs completed so far")
     created_at: datetime
     started_at: Optional[datetime] = None
     completed_at: Optional[datetime] = None
@@ -199,6 +186,7 @@ class JobWithHistory(JobResponse):
 # ---------------------------------------------------------------------------
 # Job status update (internal)
 # ---------------------------------------------------------------------------
+
 
 class JobStatusUpdate(BaseModel):
     """Schema for real-time training status updates sent over WebSocket."""

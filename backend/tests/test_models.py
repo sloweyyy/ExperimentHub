@@ -2,6 +2,7 @@
 
 import pytest
 import torch
+
 from models.mnist_model import create_model
 
 

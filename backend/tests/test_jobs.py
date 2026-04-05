@@ -54,8 +54,12 @@ class TestListJobs:
     def test_list_jobs(self, client):
         """GET /jobs/ returns created jobs."""
         exp_id = _create_experiment(client)
-        client.post("/jobs/", json=_minimal_job_payload(exp_id, name="Job A", model_type="cnn"))
-        client.post("/jobs/", json=_minimal_job_payload(exp_id, name="Job B", model_type="mlp"))
+        client.post(
+            "/jobs/", json=_minimal_job_payload(exp_id, name="Job A", model_type="cnn")
+        )
+        client.post(
+            "/jobs/", json=_minimal_job_payload(exp_id, name="Job B", model_type="mlp")
+        )
 
         response = client.get("/jobs/")
         assert response.status_code == 200

@@ -63,7 +63,7 @@ jobs:
           cache-dependency-path: experimenthub/package-lock.json
 
       - name: Install dependencies
-        run: cd experimenthub && npm ci
+        run: cd experimenthub && npm ci --legacy-peer-deps
 
       - name: Lint (ESLint)
         run: cd experimenthub && npm run lint

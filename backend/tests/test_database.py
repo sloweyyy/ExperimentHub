@@ -86,7 +86,9 @@ class TestExperimentJobRelationship:
         session.commit()
 
         # Confirm the job exists
-        assert session.query(Job).filter(Job.job_id == "cascade-job-1").first() is not None
+        assert (
+            session.query(Job).filter(Job.job_id == "cascade-job-1").first() is not None
+        )
 
         # Delete the parent experiment
         session.delete(experiment)

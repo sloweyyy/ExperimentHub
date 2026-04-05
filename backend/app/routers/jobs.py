@@ -35,6 +35,7 @@ def set_main_loop(loop: asyncio.AbstractEventLoop) -> None:
 
 # -- Status callback ---------------------------------------------------------
 
+
 async def training_status_callback(status_data: dict):
     """Process a training status update: persist to DB and broadcast via WS."""
     job_id = status_data.get("job_id")
@@ -48,10 +49,7 @@ async def training_status_callback(status_data: dict):
         if "epoch" in status_data:
             job.epochs_completed = status_data["epoch"]
 
-        if (
-            status_data.get("status") == "completed"
-            and "final_results" in status_data
-        ):
+        if status_data.get("status") == "completed" and "final_results" in status_data:
             results = status_data["final_results"]
             job.status = "completed"
             job.completed_at = datetime.utcnow()
@@ -70,6 +68,7 @@ async def training_status_callback(status_data: dict):
 
 
 # -- Background training runner ----------------------------------------------
+
 
 def run_training_job(job_id: str, model_type: str, parameters: dict):
     """Execute a training job in a background thread.
@@ -136,6 +135,7 @@ def run_training_job(job_id: str, model_type: str, parameters: dict):
 
 # -- Endpoints ---------------------------------------------------------------
 
+
 @router.post("/jobs/", response_model=JobResponse)
 def create_job(
     job: JobCreate,
@@ -143,9 +143,7 @@ def create_job(
     db: Session = Depends(get_db),
 ):
     # Verify experiment exists
-    experiment = (
-        db.query(Experiment).filter(Experiment.id == job.experiment_id).first()
-    )
+    experiment = db.query(Experiment).filter(Experiment.id == job.experiment_id).first()
     if not experiment:
         raise HTTPException(status_code=404, detail="Experiment not found")
 
@@ -207,8 +205,8 @@ def create_job(
                 job_params.get("num_layers"),
             )
         elif job.model_type == "cnn":
-            specific_params_match = (
-                ej_params.get("kernel_size") == job_params.get("kernel_size")
+            specific_params_match = ej_params.get("kernel_size") == job_params.get(
+                "kernel_size"
             )
             logger.debug(
                 "CNN specific - kernel: %s vs %s",
