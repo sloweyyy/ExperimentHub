@@ -10,7 +10,9 @@ models, and monitor progress in real time.
 ExperimentHub exists to be studied, forked, and improved. If you want to learn how a
 full-stack ML app works, or you want to contribute to one, start here.
 
-![ExperimentHub Demo](docs/demo.gif)
+<p align="center">
+  <img src="docs/demo.gif" alt="ExperimentHub Demo" width="100%">
+</p>
 
 ## Quick Start
 
