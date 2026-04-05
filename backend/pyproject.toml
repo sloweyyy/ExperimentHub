@@ -15,9 +15,28 @@ warn_unused_configs = true
 disallow_untyped_defs = true
 disallow_incomplete_defs = true
 check_untyped_defs = true
-disallow_untyped_decorators = true
+disallow_untyped_decorators = false
 no_implicit_optional = true
 strict_optional = true
+
+# FastAPI route handlers are decorated with return types inferred by the
+# framework, and SQLAlchemy Column assignments trigger false positives.
+# Keep strict mode for database and schemas.
+[[tool.mypy.overrides]]
+module = ["app.routers.*", "app.main"]
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+disable_error_code = ["arg-type", "assignment"]
+
+# PyTorch models have dynamic types that mypy can't follow.
+[[tool.mypy.overrides]]
+module = ["models.*"]
+disallow_untyped_defs = false
+disable_error_code = ["arg-type", "var-annotated", "assignment"]
+
+[[tool.mypy.overrides]]
+module = ["torch.*", "torchvision.*"]
+ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

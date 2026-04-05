@@ -266,7 +266,7 @@ def create_job(
 
 @router.get("/jobs/", response_model=list[JobResponse])
 def read_jobs(
-    experiment_id: int = None,
+    experiment_id: Optional[int] = None,
     skip: int = 0,
     limit: int = 100,
     db: Session = Depends(get_db),
