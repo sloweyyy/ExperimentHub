@@ -1,88 +1,106 @@
 # ExperimentHub
 
-<div align="center">
-  <h3>🚀 A Modern Machine Learning Experiment Management Platform</h3>
-  <p>Track, compare, and optimize your ML models with ease</p>
-</div>
+[![CI](https://github.com/sloweyyy/ExperimentHub/actions/workflows/ci.yml/badge.svg)](https://github.com/sloweyyy/ExperimentHub/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+
+A contributor-friendly ML experiment management platform. Track experiments, train
+models, and monitor progress in real time.
+
+ExperimentHub exists to be studied, forked, and improved. If you want to learn how a
+full-stack ML app works, or you want to contribute to one, start here.
 
 ![ExperimentHub Dashboard](https://github.com/user-attachments/assets/765d961d-afca-4b16-b1dd-4006e8cb0f87)
 
-## System Architecture
+## Quick Start
+
+```bash
+git clone https://github.com/sloweyyy/ExperimentHub.git
+cd ExperimentHub
+cp .env.example .env
+make dev
+```
+
+Open `http://localhost:3000`. Create an experiment, start a training job, watch it train.
+
+**Requirements:** Python 3.10+, Node.js 20+. Or use Docker: `make docker`.
+
+## What It Does
+
+- **Experiment management** with create, update, and delete
+- **Model training** with CNN, MLP, and RNN architectures on MNIST
+- **Real-time progress** via WebSocket (loss, accuracy, epoch timing)
+- **Hyperparameter configuration** (optimizer, learning rate, batch size, epochs, dropout, hidden size)
+- **Job lifecycle** with pending, running, completed, cancelled, and failed states
+- **Training history** with loss curves and accuracy metrics
+
+## Architecture
+
+```
+┌─────────────────┐     REST + WS     ┌─────────────────┐
+│   Next.js 15    │ ◄──────────────► │    FastAPI       │
+│   (Frontend)    │    port 3000      │    (Backend)     │
+│                 │                    │                  │
+│  Shadcn UI      │                    │  routers/        │
+│  Zustand Store  │                    │  PyTorch Models  │
+│  Recharts       │                    │  Alembic         │
+└─────────────────┘                    └────────┬─────────┘
+                                                │
+                                       ┌────────▼─────────┐
+                                       │  SQLite (dev) /   │
+                                       │  PostgreSQL (prod)│
+                                       └──────────────────┘
+```
 
 ![System Architecture](https://github.com/user-attachments/assets/72a42c4c-f6c8-4fbc-b317-f8e0fb5805b9)
 
-The ExperimentHub platform uses a modern containerized architecture with the following components:
+## Tech Stack
 
-- **Frontend Container**:
-  - Next.js Application (UI) for the main interface
-  - Job Management UI for monitoring training progress
-  - Communicates with backend via REST API and WebSocket for real-time updates
+| Layer | Technology |
+|-------|-----------|
+| Frontend | Next.js 15, React 19, TypeScript, Tailwind CSS, Shadcn UI, Zustand, Recharts |
+| Backend | FastAPI, SQLAlchemy 2.0, Pydantic 2, Alembic |
+| ML | PyTorch, TorchVision (MNIST) |
+| Infra | Docker Compose, GitHub Actions, GHCR |
 
-- **Backend Container**:
-  - FastAPI Server handling API requests and WebSocket connections
-  - ML Model Training Modules for executing experiments
-  - Integrates with SQLite for job/experiment tracking
-  - Manages MNIST dataset access for training
+## Contributing
 
-- **Data & Persistence**:
-  - SQLite Database for storing experiment metadata and results
-  - MNIST Dataset for model training
+We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for:
 
-The system uses Docker Compose for orchestration, making it easy to deploy and scale. The architecture ensures real-time communication between components through WebSocket connections for live training updates and REST APIs for general operations.
+- Quick start guide (running in under 3 minutes)
+- Architecture overview
+- **How to Add a New Model Architecture** (step-by-step tutorial)
+- **How to Add a New API Endpoint**
+- Code style and testing guidelines
 
-## Features
+Looking for something to work on? Check issues labeled
+[`good first issue`](https://github.com/sloweyyy/ExperimentHub/labels/good%20first%20issue).
 
-- **Experiment Management**: Create, organize, and track machine learning experiments
-- **Model Training**: Train MLP, CNN, and RNN models with customizable hyperparameters
-- **Real-time Monitoring**: Track metrics and progress during training via WebSockets
-- **Interactive Visualizations**: Compare performance metrics across models and experiments
-- **Job Queue**: Manage multiple training jobs simultaneously
-
-## Project Structure
-
-The project is organized into two main components:
-
-- [**Frontend**](experimenthub/README.md): Next.js-based web interface (React 19, Tailwind CSS)
-- [**Backend**](backend/README.md): FastAPI server with PyTorch model training
-
-## Quick Start
-
-### Using Docker
-
-The easiest way to run the entire application stack is with Docker Compose:
+## Development Commands
 
 ```bash
-# Start all services
-docker-compose up
-
-# Access the frontend at http://localhost:3000
-# Access the backend API at http://localhost:8000
+make dev              # Start local development
+make docker           # Run with Docker Compose
+make test             # Run all tests
+make lint             # Run all linters
+make format           # Auto-format code
+make migrate          # Apply database migrations
 ```
 
-### Manual Setup
+## API Documentation
 
-For development, you can set up the frontend and backend separately:
+With the backend running, visit:
+- Swagger UI: `http://localhost:8000/docs`
+- ReDoc: `http://localhost:8000/redoc`
 
-1. **Backend**:
-   ```bash
-   cd backend
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
-   pip install -e ".[dev]"
-   uvicorn app.main:app --reload
-   ```
+## Known Limitations
 
-2. **Frontend**:
-   ```bash
-   cd experimenthub
-   npm install
-   npm run dev
-   ```
+- Training jobs run in-process. Server restart kills running jobs (cleaned up on next start).
+- MNIST only. Dataset extensibility is planned.
+- Single-machine. No distributed training yet.
 
-## Development
-
-See the individual README files in the [frontend](experimenthub/README.md) and [backend](backend/README.md) directories for detailed development instructions.
+To report a security issue, email sloweyyy@gmail.com.
 
 ## License
 
-MIT
+[MIT](LICENSE)
