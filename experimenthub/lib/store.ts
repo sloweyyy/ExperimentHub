@@ -55,15 +55,37 @@ export const useStore = create<StoreState>()(
 			setActiveExperiment: (activeExperiment) => set({ activeExperiment }),
 			setActiveJob: (activeJob) => set({ activeJob }),
 			removeExperiment: (experimentId) =>
-				set((state) => ({
-					experiments: state.experiments.filter(
-						(exp) => exp.id !== experimentId
-					),
-					activeExperiment:
-						state.activeExperiment?.id === experimentId
-							? null
-							: state.activeExperiment,
-				})),
+				set((state) => {
+					const removedJobIds = state.jobs
+						.filter((j) => j.experiment_id === experimentId)
+						.map((j) => j.job_id);
+					return {
+						experiments: state.experiments.filter(
+							(exp) => exp.id !== experimentId
+						),
+						jobs: state.jobs.filter(
+							(j) => j.experiment_id !== experimentId
+						),
+						jobsWithHistory: Object.fromEntries(
+							Object.entries(state.jobsWithHistory).filter(
+								([key]) => !removedJobIds.includes(key)
+							)
+						),
+						jobStatus: Object.fromEntries(
+							Object.entries(state.jobStatus).filter(
+								([key]) => !removedJobIds.includes(key)
+							)
+						),
+						activeExperiment:
+							state.activeExperiment?.id === experimentId
+								? null
+								: state.activeExperiment,
+						activeJob:
+							state.activeJob && removedJobIds.includes(state.activeJob.job_id)
+								? null
+								: state.activeJob,
+					};
+				}),
 			setJobHistory: (jobId, job) =>
 				set((state) => ({
 					jobsWithHistory: { ...state.jobsWithHistory, [jobId]: job },
