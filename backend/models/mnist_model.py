@@ -9,11 +9,15 @@ class SimpleCNN(nn.Module):
         self.conv1 = nn.Conv2d(1, 32, kernel_size=kernel_size)
         self.conv2 = nn.Conv2d(32, 64, kernel_size=kernel_size)
 
-        # Calculate the size after convolutions and max-pooling
-        # For MNIST (28x28), after 2 convolutions with kernel_size=3 and stride=1,
-        # and 2 max-poolings with kernel_size=2, the size becomes 5x5
-        self.fc1 = nn.Linear(64 * 5 * 5, hidden_size)
+        # Spatial size after 2 convs (no padding) + 2 max-pools (k=2).
+        # Each conv shrinks by (kernel_size-1), each pool halves.
+        conv1_out = 28 - (kernel_size - 1)  # after first conv
+        pool1_out = conv1_out // 2  # after first max-pool
+        conv2_out = pool1_out - (kernel_size - 1)  # after second conv
+        pool2_out = conv2_out // 2  # after second max-pool
+        fc_input_size = 64 * pool2_out * pool2_out
 
+        self.fc1 = nn.Linear(fc_input_size, hidden_size)
         self.dropout = nn.Dropout(dropout_rate)
         self.fc2 = nn.Linear(hidden_size, 10)
 

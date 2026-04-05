@@ -208,13 +208,19 @@ def create_job(
                 job_params.get("num_layers"),
             )
         elif job.model_type == "cnn":
-            specific_params_match = ej_params.get("kernel_size") == job_params.get(
-                "kernel_size"
+            specific_params_match = (
+                ej_params.get("kernel_size") == job_params.get("kernel_size")
+                and ej_params.get("hidden_size") == job_params.get("hidden_size")
+                and ej_params.get("dropout_rate") == job_params.get("dropout_rate")
             )
             logger.debug(
-                "CNN specific - kernel: %s vs %s",
+                "CNN specific - kernel: %s vs %s, hidden: %s vs %s, dropout: %s vs %s",
                 ej_params.get("kernel_size"),
                 job_params.get("kernel_size"),
+                ej_params.get("hidden_size"),
+                job_params.get("hidden_size"),
+                ej_params.get("dropout_rate"),
+                job_params.get("dropout_rate"),
             )
         elif job.model_type == "rnn":
             specific_params_match = (

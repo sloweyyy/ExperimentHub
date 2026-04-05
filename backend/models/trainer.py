@@ -130,6 +130,8 @@ def train_model(model, job_id, config, status_callback=None):
         # Setup optimizer
         if optimizer_name.lower() == "adam":
             optimizer = optim.Adam(model.parameters(), lr=learning_rate)
+        elif optimizer_name.lower() == "rmsprop":
+            optimizer = optim.RMSprop(model.parameters(), lr=learning_rate)
         else:
             optimizer = optim.SGD(
                 model.parameters(),
