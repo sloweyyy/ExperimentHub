@@ -3,7 +3,7 @@ FROM node:20-alpine AS base
 WORKDIR /app
 
 COPY experimenthub/package*.json ./
-RUN npm ci
+RUN npm ci --legacy-peer-deps
 
 COPY experimenthub/ ./
 
