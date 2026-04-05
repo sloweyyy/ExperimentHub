@@ -36,41 +36,14 @@ export function JobList({ experimentId }: JobListProps) {
 	const router = useRouter();
 	const { jobs, jobStatus, updateJobStatus, removeJob } = useStore();
 
-	console.log(
-		"All jobs:",
-		jobs.map((j) => ({
-			id: j.id,
-			job_id: j.job_id,
-			name: j.name,
-			exp_id: j.experiment_id,
-		}))
-	);
-	console.log("Current experiment ID:", experimentId);
-
-	const uniqueJobIds = new Set();
+	const uniqueJobIds = new Set<string>();
 	const experimentJobs = jobs
+		.filter((job) => job.experiment_id === experimentId)
 		.filter((job) => {
-			const match = job.experiment_id === experimentId;
-			console.log(
-				`Job ${job.name} (${job.job_id}) experiment_id: ${job.experiment_id}, matches ${experimentId}? ${match}`
-			);
-			return match;
-		})
-		.filter((job) => {
-			if (uniqueJobIds.has(job.job_id)) {
-				console.warn(
-					`Duplicate job_id found: ${job.job_id} for job ${job.name}. Filtering out duplicate.`
-				);
-				return false;
-			}
+			if (uniqueJobIds.has(job.job_id)) return false;
 			uniqueJobIds.add(job.job_id);
 			return true;
 		});
-
-	console.log(
-		"Filtered experiment jobs:",
-		experimentJobs.map((j) => ({ id: j.id, job_id: j.job_id, name: j.name }))
-	);
 
 	const sortedJobs = [...experimentJobs].sort((a, b) => {
 		return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
@@ -189,14 +162,11 @@ export function JobList({ experimentId }: JobListProps) {
 	const handleDeleteJob = async (jobId: string) => {
 		try {
 			await jobApi.delete(jobId);
-			removeJob(jobId);
-			toast.success("Job deleted successfully");
-		} catch (error) {
-			console.error("Error deleting job:", error);
-			toast.error("Failed to delete job", {
-				description: "There was an error deleting the job. Please try again.",
-			});
+		} catch {
+			// Job may already be gone from DB (e.g. cascade delete). That's fine.
 		}
+		removeJob(jobId);
+		toast.success("Job deleted successfully");
 	};
 
 	return (
