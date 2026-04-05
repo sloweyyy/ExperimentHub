@@ -36,23 +36,11 @@ Open `http://localhost:3000`. Create an experiment, start a training job, watch 
 
 ## Architecture
 
-```
-┌─────────────────┐     REST + WS     ┌─────────────────┐
-│   Next.js 15    │ ◄──────────────► │    FastAPI       │
-│   (Frontend)    │    port 3000      │    (Backend)     │
-│                 │                    │                  │
-│  Shadcn UI      │                    │  routers/        │
-│  Zustand Store  │                    │  PyTorch Models  │
-│  Recharts       │                    │  Alembic         │
-└─────────────────┘                    └────────┬─────────┘
-                                                │
-                                       ┌────────▼─────────┐
-                                       │  SQLite (dev) /   │
-                                       │  PostgreSQL (prod)│
-                                       └──────────────────┘
-```
-
 ![System Architecture](https://github.com/user-attachments/assets/72a42c4c-f6c8-4fbc-b317-f8e0fb5805b9)
+
+Next.js 15 frontend communicates with the FastAPI backend over REST and WebSocket.
+The backend trains PyTorch models and streams real-time progress to the UI.
+SQLite for local dev, PostgreSQL for Docker.
 
 ## Tech Stack
 
