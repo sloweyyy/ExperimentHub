@@ -1,6 +1,7 @@
 [flake8]
 max-line-length = 88
-extend-ignore = E203  # For Black compatibility
+# E203: whitespace before ':' — conflicts with Black
+extend-ignore = E203
 per-file-ignores =
     # Allow __init__.py to import without using the imports
     __init__.py:F401

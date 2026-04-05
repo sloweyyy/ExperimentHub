@@ -5,7 +5,6 @@ import type {
 	Job,
 	JobWithHistory,
 	JobStatusUpdate,
-	JobStatus,
 } from "@/types";
 
 interface StoreState {
