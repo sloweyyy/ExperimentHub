@@ -1,0 +1,38 @@
+name: Add New Model Architecture
+description: Propose a new neural network architecture for ExperimentHub
+labels: ["enhancement", "good first issue", "model"]
+body:
+  - type: input
+    id: model_name
+    attributes:
+      label: Model name
+      description: "e.g., ResNet, Transformer, GRU"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Brief description of the architecture and why it would be a good addition.
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Implementation checklist
+      description: Follow the guide in CONTRIBUTING.md under "How to Add a New Model Architecture"
+      options:
+        - label: "Create model class in `backend/models/mnist_model.py` (subclass `nn.Module`)"
+        - label: "Register in `create_model()` factory function"
+        - label: "Add duplicate detection branch in `routers/jobs.py`"
+        - label: "Add model instantiation test in `backend/tests/test_models.py`"
+        - label: "Update `ModelType` in `experimenthub/types/index.ts`"
+        - label: "Update frontend job form to show model-specific parameters"
+
+  - type: textarea
+    id: references
+    attributes:
+      label: References
+      description: Links to papers or implementations that describe this architecture.
