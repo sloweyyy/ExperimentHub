@@ -87,7 +87,7 @@ With the backend running, visit:
 - MNIST only. Dataset extensibility is planned.
 - Single-machine. No distributed training yet.
 
-To report a security issue, email sloweyyy@gmail.com.
+To report a security issue, email truonglevinhphuc2006@gmail.com.
 
 ## License
 
