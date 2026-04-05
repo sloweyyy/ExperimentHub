@@ -163,4 +163,4 @@ export class WebSocketService {
 
 export const wsService = new WebSocketService();
 
-export type { JobStatusType } from "@/types";
+export type { JobStatus } from "@/types";
