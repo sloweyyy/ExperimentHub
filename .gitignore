@@ -29,6 +29,24 @@ backend/models/*.pt
 
 # Frontend ignores are in experimenthub/.gitignore
 
+# Database
+*.sqlite
+*.db
+
+# Environment
+.env
+
+# IDE
+.vscode/
+.idea/
+
+# Testing
+.coverage
+htmlcov/
+.pytest_cache/
+.mypy_cache/
+coverage/
+
 # OS specific
 .DS_Store
 Thumbs.db

@@ -14,7 +14,7 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
-COPY --from=base /app/next.config.mjs ./
+COPY --from=base /app/next.config.ts ./
 COPY --from=base /app/public ./public
 COPY --from=base /app/.next ./.next
 COPY --from=base /app/node_modules ./node_modules
@@ -24,4 +24,4 @@ ENV NEXT_PUBLIC_API_URL=http://backend:8000
 
 EXPOSE 3000
 
-CMD ["npm", "start"] 
+CMD ["npm", "start"]

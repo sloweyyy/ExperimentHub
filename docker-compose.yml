@@ -1,15 +1,10 @@
-version: '3.8'
-
 services:
   frontend:
     build:
-      context: ./experimenthub
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: Dockerfile.frontend
     ports:
       - "3000:3000"
-    volumes:
-      - ./experimenthub:/app
-      - /app/node_modules
     environment:
       - NEXT_PUBLIC_API_URL=http://backend:8000
     depends_on:
@@ -19,14 +14,13 @@ services:
 
   backend:
     build:
-      context: ./backend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: Dockerfile.backend
     ports:
       - "8000:8000"
-    volumes:
-      - ./backend:/app
     environment:
       - DATABASE_URL=postgresql://postgres:postgres@db:5432/experimenthub
+      - CORS_ORIGINS=http://localhost:3000,http://frontend:3000
     depends_on:
       - db
     networks:
