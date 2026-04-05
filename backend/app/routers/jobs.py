@@ -5,10 +5,13 @@ Handles CRUD operations for training jobs, background training execution,
 and real-time status updates via the WebSocket router.
 """
 
+from __future__ import annotations
+
 import asyncio
 import logging
 import uuid
 from datetime import datetime
+from typing import Optional
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from sqlalchemy.orm import Session
@@ -24,7 +27,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="")
 
 # Reference to the main asyncio event loop, set during app startup.
-_main_loop: asyncio.AbstractEventLoop | None = None
+_main_loop: Optional[asyncio.AbstractEventLoop] = None
 
 
 def set_main_loop(loop: asyncio.AbstractEventLoop) -> None:

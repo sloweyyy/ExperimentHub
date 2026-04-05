@@ -1,5 +1,5 @@
 import axios from "axios";
-import type { JobStatus as JobStatusType } from "@/types";
+import type { JobStatus as JobStatusEnum } from "@/types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -75,7 +75,7 @@ export const jobApi = {
 
 export type JobStatus = {
 	job_id: string;
-	status: JobStatusType;
+	status: JobStatusEnum;
 	epoch?: number;
 	epochs_total?: number;
 	train_loss?: number;
@@ -163,4 +163,3 @@ export class WebSocketService {
 
 export const wsService = new WebSocketService();
 
-export type { JobStatus } from "@/types";

@@ -1,7 +1,5 @@
 """Tests for experiment CRUD endpoints."""
 
-import pytest
-
 
 class TestCreateExperiment:
     def test_create_experiment(self, client):

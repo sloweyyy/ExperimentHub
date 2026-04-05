@@ -1,7 +1,5 @@
 """Tests for job CRUD endpoints."""
 
-import pytest
-
 
 def _create_experiment(client, name="Test Experiment"):
     """Helper: create an experiment and return its id."""
